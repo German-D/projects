@@ -1,10 +1,13 @@
 const isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
 
 const correctMail = "german@dolnikov.ru";
-const correctPass = "iLoveqastudio1";
+const correctPasswords = ["iLoveqastudio1", "qa_one_love1"];
 
 const MESSAGE_TEXT = {
-  valid: "Авторизация прошла успешно",
+  // !!! взял на себя смелость исправить статус valid на succesful
+  // Потому что valid могут быть любые данные, соответствующие валидатору,
+  // а successful - только корректная пара логин/пароль
+  successful: 'Авторизация прошла успешно', 
   invalid: "Нужно исправить проблему валидации",
   fail: "Такого логина или пароля нет",
   sendMail: "Успешно отправили пароль на e-mail",
@@ -42,13 +45,17 @@ function submitForm(e) {
   if (isFirefox) {
     return;
   }
-  if (!form.checkValidity()) {
+
+  // !!! Сперва проверим, что соблюдены формальные требования - имейл валиден и пароль не пуст
+  if (!validateEmail(mailInput.value) && passInput.value.length > 0) {
     loginButton.disabled = true;
     showMessage(MESSAGE_TEXT.invalid);
     return;
   }
-  if (mailInput.value === correctMail && passInput.value === correctPass) {
-    showMessage(MESSAGE_TEXT.valid);
+
+  // !!! Теперь проверяем логин/пароль 
+  if (mailInput.value === correctMail && correctPasswords.includes(passInput.value)) {
+    showMessage(MESSAGE_TEXT.successful);
   } else {
     showMessage(MESSAGE_TEXT.fail);
   }
@@ -82,9 +89,22 @@ function openForgotForm(e) {
 
 function restoreEmail(e) {
   e.preventDefault();
+
+  // !!! Проверим эмейл, прежде чем отправлять письмо на восстановление
+  if (!validateEmail(mailForgotInput.value)) {
+    showMessage(MESSAGE_TEXT.invalid);
+    return;
+  }
+  
   showMessage(MESSAGE_TEXT.sendMail);
 }
 
 function resize() {
   this.style.width = `${this.value.length * 10}px`;
+}
+
+// !!! Функция валидации эмейл адреса на основе регулярного выражения
+function validateEmail(email) {
+  const emailPattern = new RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,20})+$/)
+  return emailPattern.test(email)
 }
